@@ -7,6 +7,8 @@ namespace App\Controllers;
 use App\Core\Controller;
 use App\Services\CharacterService;
 use App\Services\ApiException;
+use App\Models\DeletedCharacter;
+use App\Models\StarredCharacter;
 
 class CharacterController extends Controller
 {
@@ -57,6 +59,14 @@ class CharacterController extends Controller
 
             $result = $this->characterService->getAll($filters, $page);
 
+            // Filter out deleted characters
+            $deletedIds = DeletedCharacter::getDeletedIds();
+            if (!empty($deletedIds) && !empty($result['data'])) {
+                $result['data'] = array_values(array_filter($result['data'], function ($character) use ($deletedIds) {
+                    return !in_array($character['id'], $deletedIds);
+                }));
+            }
+
             return $this->json($result);
         } catch (ApiException $e) {
             return $this->json([
@@ -74,7 +84,17 @@ class CharacterController extends Controller
     public function detail(string $id): string
     {
         try {
-            $result = $this->characterService->getById((int) $id);
+            $characterId = (int) $id;
+
+            // Check if character is deleted
+            if (DeletedCharacter::isDeleted($characterId)) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Character has been deleted',
+                ], 404);
+            }
+
+            $result = $this->characterService->getById($characterId);
 
             if ($result === null) {
                 return $this->json([
@@ -99,19 +119,123 @@ class CharacterController extends Controller
 
     public function delete(string $id): string
     {
-        return $this->json([
-            'success' => true,
-            'message' => 'Soft delete - to be implemented in Phase 8',
-            'characterId' => (int) $id,
-        ]);
+        try {
+            $characterId = (int) $id;
+
+            if (DeletedCharacter::isDeleted($characterId)) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Character is already deleted',
+                ], 400);
+            }
+
+            DeletedCharacter::softDelete($characterId);
+
+            // Also remove from starred if it was starred
+            StarredCharacter::unstar($characterId);
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Character deleted successfully',
+                'characterId' => $characterId,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
     }
 
     public function restore(string $id): string
     {
-        return $this->json([
-            'success' => true,
-            'message' => 'Restore - to be implemented in Phase 8',
-            'characterId' => (int) $id,
-        ]);
+        try {
+            $characterId = (int) $id;
+
+            if (!DeletedCharacter::isDeleted($characterId)) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Character is not deleted',
+                ], 400);
+            }
+
+            DeletedCharacter::restore($characterId);
+
+            return $this->json([
+                'success' => true,
+                'message' => 'Character restored successfully',
+                'characterId' => $characterId,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
+
+    // API endpoint for starring/unstarring characters
+    public function toggleStar(string $id): string
+    {
+        try {
+            $characterId = (int) $id;
+
+            // Check if character is deleted
+            if (DeletedCharacter::isDeleted($characterId)) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Cannot star a deleted character',
+                ], 400);
+            }
+
+            $result = StarredCharacter::toggle($characterId);
+
+            return $this->json([
+                'success' => true,
+                'starred' => $result['starred'],
+                'characterId' => $characterId,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
+
+    // API endpoint to get all starred character IDs
+    public function getStarred(): string
+    {
+        try {
+            $starredIds = StarredCharacter::getStarredIds();
+
+            return $this->json([
+                'success' => true,
+                'data' => $starredIds,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
+    }
+
+    // API endpoint to get all deleted character IDs
+    public function getDeleted(): string
+    {
+        try {
+            $deletedIds = DeletedCharacter::getDeletedIds();
+
+            return $this->json([
+                'success' => true,
+                'data' => $deletedIds,
+            ]);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
     }
 }

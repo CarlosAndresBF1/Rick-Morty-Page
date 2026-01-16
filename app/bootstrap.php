@@ -34,6 +34,12 @@ $config = require BASE_PATH . '/config/app.php';
 // Make config globally accessible
 $GLOBALS['config'] = $config;
 
+// Initialize database
+use App\Database\Database;
+
+Database::init(BASE_PATH . '/storage/database/app.sqlite');
+Database::runMigrations();
+
 /**
  * Get configuration value
  * 

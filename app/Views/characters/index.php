@@ -70,13 +70,13 @@
          <div class="flex-1 overflow-y-auto" id="character-list">
              <div class="p-4 lg:p-5 space-y-2" id="loading-state">
                  <?php for ($i = 0; $i < 8; $i++): ?>
-                 <div class="animate-pulse flex items-center gap-4 px-5 py-4 bg-primary-100 rounded-lg">
-                     <div class="w-8 h-8 bg-primary-200 rounded-[20px]"></div>
-                     <div class="flex-1 space-y-2">
-                         <div class="h-4 bg-primary-200 rounded w-3/4"></div>
-                         <div class="h-3 bg-primary-200 rounded w-1/2"></div>
+                     <div class="animate-pulse flex items-center gap-4 px-5 py-4 bg-primary-100 rounded-lg">
+                         <div class="w-8 h-8 bg-primary-200 rounded-[20px]"></div>
+                         <div class="flex-1 space-y-2">
+                             <div class="h-4 bg-primary-200 rounded w-3/4"></div>
+                             <div class="h-3 bg-primary-200 rounded w-1/2"></div>
+                         </div>
                      </div>
-                 </div>
                  <?php endfor; ?>
              </div>
              <div class="p-4 lg:p-5 space-y-2 hidden" id="characters-container">
@@ -89,8 +89,6 @@
                      <p class="text-gray-500">Try adjusting your search or filters</p>
                  </div>
              </div>
-         </div>
-         <div class="p-4 lg:p-5 border-t border-gray-200" id="pagination">
          </div>
 
      </aside>
@@ -125,27 +123,27 @@
  </div>
 
  <style>
-.filter-option {
-    padding: 9px 17px;
-    border-radius: 8px;
-    border: 1px solid #E5E7EB;
-    background: #FFFFFF;
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: center;
-    color: #6B7280;
-    transition: all 0.2s;
-}
+     .filter-option {
+         padding: 9px 17px;
+         border-radius: 8px;
+         border: 1px solid #E5E7EB;
+         background: #FFFFFF;
+         font-weight: 500;
+         font-size: 14px;
+         line-height: 20px;
+         text-align: center;
+         color: #6B7280;
+         transition: all 0.2s;
+     }
 
-.filter-option:hover {
-    border-color: #8054C7;
-}
+     .filter-option:hover {
+         border-color: #8054C7;
+     }
 
-.filter-option.selected {
-    background: #EEE3FF;
-    border-color: #EEE3FF;
-    color: #8054C7;
-    font-weight: 600;
-}
+     .filter-option.selected {
+         background: #EEE3FF;
+         border-color: #EEE3FF;
+         color: #8054C7;
+         font-weight: 600;
+     }
  </style>

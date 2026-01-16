@@ -9,42 +9,113 @@ const App = {
     characters: [],
     starredIds: [],
     pagination: null,
+    isLoading: false,
+    hasMore: true,
     api: {
         characters: '/api/characters',
-        character: (id) => `/api/characters/${id}`
+        character: (id) => `/api/characters/${id}`,
+        starred: '/api/starred',
+        toggleStar: (id) => `/api/characters/${id}/star`,
+        deleteChar: (id) => `/api/characters/${id}`,
+        restore: (id) => `/api/characters/${id}/restore`
     }
 };
 
-// Load starred characters from localStorage
-function loadStarredFromStorage() {
+// Load starred characters from server
+async function loadStarredFromServer() {
     try {
-        const stored = localStorage.getItem('rickmorty_starred');
-        App.starredIds = stored ? JSON.parse(stored) : [];
+        const response = await fetch(App.api.starred);
+        const data = await response.json();
+        if (data.success) {
+            App.starredIds = data.data.map(id => parseInt(id));
+        }
     } catch (e) {
+        console.error('Error loading starred characters:', e);
         App.starredIds = [];
     }
 }
 
-// Save starred characters to localStorage
-function saveStarredToStorage() {
-    localStorage.setItem('rickmorty_starred', JSON.stringify(App.starredIds));
-}
-
-// Toggle starred status for a character
-function toggleStarred(characterId, event) {
+// Toggle starred status for a character (via API)
+async function toggleStarred(characterId, event) {
     if (event) {
         event.stopPropagation();
     }
     
-    const index = App.starredIds.indexOf(characterId);
-    if (index > -1) {
-        App.starredIds.splice(index, 1);
-    } else {
-        App.starredIds.push(characterId);
+    try {
+        const response = await fetch(App.api.toggleStar(characterId), {
+            method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            if (data.starred) {
+                if (!App.starredIds.includes(characterId)) {
+                    App.starredIds.push(characterId);
+                }
+            } else {
+                const index = App.starredIds.indexOf(characterId);
+                if (index > -1) {
+                    App.starredIds.splice(index, 1);
+                }
+            }
+            renderCharacters();
+            
+            // Update detail panel if this character is selected
+            if (App.selectedCharacterId === characterId) {
+                const character = App.characters.find(c => c.id === characterId);
+                if (character) {
+                    renderCharacterDetail(character);
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Error toggling starred:', e);
+    }
+}
+
+// Delete a character (soft delete via API)
+async function deleteCharacter(characterId, event) {
+    if (event) {
+        event.stopPropagation();
     }
     
-    saveStarredToStorage();
-    renderCharacters();
+    if (!confirm('Are you sure you want to delete this character?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(App.api.deleteChar(characterId), {
+            method: 'DELETE'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+            // Remove from local arrays
+            App.characters = App.characters.filter(c => c.id !== characterId);
+            const starredIndex = App.starredIds.indexOf(characterId);
+            if (starredIndex > -1) {
+                App.starredIds.splice(starredIndex, 1);
+            }
+            
+            // If this was the selected character, select another
+            if (App.selectedCharacterId === characterId) {
+                App.selectedCharacterId = null;
+                if (App.characters.length > 0) {
+                    selectCharacter(App.characters[0].id);
+                } else {
+                    // Hide detail panel
+                    const detailContainer = document.getElementById('character-detail');
+                    const detailPlaceholder = document.getElementById('detail-placeholder');
+                    if (detailContainer) detailContainer.classList.add('hidden');
+                    if (detailPlaceholder) detailPlaceholder.classList.remove('hidden');
+                }
+            }
+            
+            renderCharacters();
+        }
+    } catch (e) {
+        console.error('Error deleting character:', e);
+    }
 }
 
 // Check if character is starred
@@ -64,10 +135,92 @@ function debounce(func, wait) {
     };
 }
 
-function init() {
-    loadStarredFromStorage();
+async function init() {
+    await loadStarredFromServer();
     setupEventListeners();
+    setupInfiniteScroll();
     loadCharacters();
+}
+
+function setupInfiniteScroll() {
+    const listContainer = document.getElementById('character-list');
+    if (!listContainer) return;
+    
+    listContainer.addEventListener('scroll', debounce(() => {
+        if (App.isLoading || !App.hasMore) return;
+        
+        const { scrollTop, scrollHeight, clientHeight } = listContainer;
+        // Load more when user scrolls to 80% of the list
+        if (scrollTop + clientHeight >= scrollHeight - 100) {
+            loadMoreCharacters();
+        }
+    }, 100));
+}
+
+async function loadMoreCharacters() {
+    if (App.isLoading || !App.hasMore) return;
+    
+    App.filters.page += 1;
+    App.isLoading = true;
+    
+    showLoadingMore();
+    
+    try {
+        const params = new URLSearchParams();
+        if (App.filters.name) params.append('name', App.filters.name);
+        if (App.filters.species) params.append('species', App.filters.species);
+        params.append('page', App.filters.page);
+
+        const response = await fetch(`${App.api.characters}?${params}`);
+        const data = await response.json();
+
+        if (data.success && data.data.length > 0) {
+            let characters = data.data;
+            
+            // Apply character filter locally (starred/others)
+            if (App.filters.character === 'starred') {
+                characters = characters.filter(c => isStarred(c.id));
+            } else if (App.filters.character === 'others') {
+                characters = characters.filter(c => !isStarred(c.id));
+            }
+            
+            App.characters = [...App.characters, ...characters];
+            App.pagination = data.info;
+            App.hasMore = App.filters.page < data.info.pages;
+            
+            renderCharacters();
+        } else {
+            App.hasMore = false;
+        }
+    } catch (error) {
+        console.error('Error loading more characters:', error);
+        App.hasMore = false;
+    } finally {
+        App.isLoading = false;
+        hideLoadingMore();
+    }
+}
+
+function showLoadingMore() {
+    const container = document.getElementById('characters-container');
+    if (!container) return;
+    
+    // Remove existing loading indicator if present
+    const existingLoader = container.querySelector('.loading-more');
+    if (existingLoader) existingLoader.remove();
+    
+    const loadingHTML = `
+        <div class="loading-more flex items-center justify-center py-4">
+            <div class="animate-spin rounded-full h-6 w-6 border-2 border-primary-600 border-t-transparent"></div>
+            <span class="ml-2 text-sm text-gray-500">Loading more...</span>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', loadingHTML);
+}
+
+function hideLoadingMore() {
+    const loader = document.querySelector('.loading-more');
+    if (loader) loader.remove();
 }
 
 function setupEventListeners() {
@@ -118,6 +271,12 @@ function setupEventListeners() {
 async function loadCharacters() {
     showLoading();
     
+    // Reset state for new search/filter
+    App.filters.page = 1;
+    App.characters = [];
+    App.hasMore = true;
+    App.isLoading = true;
+    
     try {
         const params = new URLSearchParams();
         if (App.filters.name) params.append('name', App.filters.name);
@@ -140,10 +299,10 @@ async function loadCharacters() {
             
             App.characters = characters;
             App.pagination = data.info;
+            App.hasMore = App.filters.page < data.info.pages;
             
             if (characters.length > 0) {
                 renderCharacters();
-                renderPagination();
                 
                 if (!App.selectedCharacterId || !characters.find(c => c.id === App.selectedCharacterId)) {
                     selectCharacter(characters[0].id);
@@ -152,11 +311,15 @@ async function loadCharacters() {
                 showEmptyState();
             }
         } else {
+            App.hasMore = false;
             showEmptyState();
         }
     } catch (error) {
         console.error('Error loading characters:', error);
+        App.hasMore = false;
         showEmptyState();
+    } finally {
+        App.isLoading = false;
     }
 }
 
@@ -330,8 +493,15 @@ function renderCharacterDetail(character) {
                 e.stopPropagation();
                 const id = parseInt(heartBtn.dataset.detailHeartId);
                 toggleStarred(id, e);
-                // Re-render the detail to update heart icon
-                renderCharacterDetail(character);
+            });
+        }
+        
+        // Add event listener for delete button
+        const deleteBtn = detailContainer.querySelector('[data-delete-id]');
+        if (deleteBtn) {
+            deleteBtn.addEventListener('click', (e) => {
+                const id = parseInt(deleteBtn.dataset.deleteId);
+                deleteCharacter(id, e);
             });
         }
     }
@@ -346,8 +516,15 @@ function renderCharacterDetail(character) {
                 e.stopPropagation();
                 const id = parseInt(mobileHeartBtn.dataset.detailHeartId);
                 toggleStarred(id, e);
-                // Re-render the detail to update heart icon
-                renderCharacterDetail(character);
+            });
+        }
+        
+        // Add event listener for mobile delete button
+        const mobileDeleteBtn = mobileDetailContent.querySelector('[data-delete-id]');
+        if (mobileDeleteBtn) {
+            mobileDeleteBtn.addEventListener('click', (e) => {
+                const id = parseInt(mobileDeleteBtn.dataset.deleteId);
+                deleteCharacter(id, e);
             });
         }
     }
@@ -404,6 +581,17 @@ function createDetailHTML(character) {
                     <span class="block text-gray-900 font-semibold">Location</span>
                     <span class="block text-gray-500 font-normal">${character.location?.name || 'Unknown'}</span>
                 </div>
+            </div>
+            
+            <!-- Delete button -->
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <button class="delete-btn w-full py-2 px-4 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm flex items-center justify-center gap-2"
+                        data-delete-id="${character.id}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/>
+                    </svg>
+                    Delete Character
+                </button>
             </div>
         </div>
     `;
@@ -472,7 +660,6 @@ function goToPage(page) {
 
 function handleSearch(e) {
     App.filters.name = e.target.value;
-    App.filters.page = 1;
     App.selectedCharacterId = null;
     loadCharacters();
 }
