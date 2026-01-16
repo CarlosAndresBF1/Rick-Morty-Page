@@ -13,40 +13,6 @@
     <link rel="preconnect" href="https://rickandmortyapi.com">
 
     <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
-
-    <style>
-    @font-face {
-        font-family: 'Greycliff CF';
-        src: local('Greycliff CF'), local('GreycliffCF');
-        font-weight: 400;
-        font-style: normal;
-        font-display: swap;
-    }
-
-    @font-face {
-        font-family: 'Greycliff CF';
-        src: local('Greycliff CF Medium'), local('GreycliffCF-Medium');
-        font-weight: 500;
-        font-style: normal;
-        font-display: swap;
-    }
-
-    @font-face {
-        font-family: 'Greycliff CF';
-        src: local('Greycliff CF DemiBold'), local('GreycliffCF-DemiBold');
-        font-weight: 600;
-        font-style: normal;
-        font-display: swap;
-    }
-
-    @font-face {
-        font-family: 'Greycliff CF';
-        src: local('Greycliff CF Bold'), local('GreycliffCF-Bold');
-        font-weight: 700;
-        font-style: normal;
-        font-display: swap;
-    }
-    </style>
 </head>
 
 <body class="bg-white font-sans text-gray-900 antialiased">

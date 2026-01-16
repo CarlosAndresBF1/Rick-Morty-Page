@@ -1,15 +1,133 @@
-/* 
- * Rick & Morty Character Explorer
- * Main Stylesheet
- * 
- * Este archivo será procesado por TailwindCSS
- */
+@font-face {
+  font-family: 'Greycliff CF';
+  src: url('/assets/fonts/fonnts.com-Greycliff_CF_Regular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Greycliff CF';
+  src: url('/assets/fonts/fonnts.com-Greycliff_CF_Medium.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Greycliff CF';
+  src: url('/assets/fonts/fonnts.com-Greycliff_CF_Demi_Bold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Greycliff CF';
+  src: url('/assets/fonts/fonnts.com-Greycliff_CF_Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 
- * Custom styles will be added in FASE 3
- * when we configure Tailwind with Design Tokens
- */
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply bg-white text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-600;
+  }
+  
+  .btn-secondary {
+    @apply bg-primary-100 text-primary-600 hover:bg-primary-600 hover:text-white focus:ring-primary-600;
+  }
+  
+  .card {
+    @apply p-4 rounded-lg bg-primary-100 transition-colors cursor-pointer;
+  }
+  
+  .card:hover {
+    @apply bg-primary-100/80;
+  }
+  
+  .card.active {
+    @apply bg-primary-100 ring-2 ring-primary-600;
+  }
+  
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-xs font-medium text-white;
+  }
+  
+  .badge-alive {
+    @apply bg-secondary-600;
+  }
+  
+  .badge-dead {
+    @apply bg-primary-700;
+  }
+  
+  .badge-unknown {
+    @apply bg-gray-500;
+  }
+  
+  .input {
+    @apply w-full h-[52px] px-5 bg-gray-100 rounded-lg text-sm font-medium text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-600;
+  }
+  
+  .filter-btn {
+    @apply w-[38px] h-[38px] flex items-center justify-center bg-primary-100 rounded-lg hover:bg-primary-600 hover:text-white transition-colors text-primary-600;
+  }
+  
+  .filter-option {
+    @apply px-4 py-3 rounded-lg text-sm font-medium text-gray-500 cursor-pointer transition-colors;
+  }
+  
+  .filter-option:hover {
+    @apply bg-gray-100;
+  }
+  
+  .filter-option.active {
+    @apply bg-primary-100 text-primary-600 font-semibold;
+  }
+  
+  .skeleton {
+    @apply animate-pulse bg-primary-200 rounded;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+}
