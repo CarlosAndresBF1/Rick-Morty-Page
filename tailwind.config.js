@@ -7,8 +7,7 @@ module.exports = {
     "./src/**/*.js",
   ],
   theme: {
-    extend: {
-      // Design tokens will be added in FASE 3
+    extend: { 
     },
   },
   plugins: [],

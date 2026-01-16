@@ -1,56 +1,30 @@
 <?php
 
 declare(strict_types=1);
-error_reporting(E_ALL);
-ini_set('display_errors', '1');
-define('BASE_PATH', dirname(__DIR__));
-define('PUBLIC_PATH', __DIR__);
-define('APP_START', microtime(true));
-$phpVersion = phpversion();
-$serverSoftware = $_SERVER['SERVER_SOFTWARE'] ?? 'Unknown';
-$documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? 'Unknown';
+define('APP_START', microtime(true)); // Verificacion de rendimiento
+require dirname(__DIR__) . '/app/bootstrap.php';
+$routes = require BASE_PATH . '/config/routes.php';
 
-?>
-<!DOCTYPE html>
-<html lang="es">
+$router = new App\Core\Router();
+$router->addRoutes($routes);
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rick & Morty - Character Explorer</title>
-    <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+$method = $_SERVER['REQUEST_METHOD'];
+$uri = $_SERVER['REQUEST_URI'];
+
+try {
+    $response = $router->dispatch($method, $uri);
+    echo $response;
+} catch (Throwable $e) {
+    if (config('app.debug')) {
+        http_response_code(500);
+        echo '<div style="font-family: monospace; padding: 20px; background: #fee; border: 1px solid #f00; margin: 20px; border-radius: 8px;">';
+        echo '<h1 style="color: #c00;">Error</h1>';
+        echo '<p><strong>Message:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+        echo '<p><strong>File:</strong> ' . htmlspecialchars($e->getFile()) . ':' . $e->getLine() . '</p>';
+        echo '<pre style="background: #333; color: #fff; padding: 10px; overflow: auto; border-radius: 4px;">' . htmlspecialchars($e->getTraceAsString()) . '</pre>';
+        echo '</div>';
+    } else {
+        http_response_code(500);
+        echo App\Core\View::render('errors/500');
     }
-
-    body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-        background: linear-gradient(135deg, #EEE3FF 0%, #FFFFFF 100%);
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .container {
-        background: #FFFFFF;
-        border-radius: 16px;
-        padding: 48px;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-        text-align: center;
-        max-width: 600px;
-        width: 100%;
-    }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-
-    </div>
-</body>
-
-</html>
+}
