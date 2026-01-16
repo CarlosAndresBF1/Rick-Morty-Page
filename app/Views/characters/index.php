@@ -31,17 +31,17 @@
                  <div class="p-4 space-y-6">
                      <div>
                          <label class="block text-sm font-medium text-gray-500 mb-3">Character</label>
-                         <div class="flex flex-wrap gap-2" id="status-filters">
-                             <button type="button" data-filter="status" data-value=""
+                         <div class="flex flex-wrap gap-2" id="character-filters">
+                             <button type="button" data-filter="character" data-value=""
                                  class="filter-option selected">All</button>
-                             <button type="button" data-filter="status" data-value="starred"
+                             <button type="button" data-filter="character" data-value="starred"
                                  class="filter-option">Starred</button>
-                             <button type="button" data-filter="status" data-value="others"
+                             <button type="button" data-filter="character" data-value="others"
                                  class="filter-option">Others</button>
                          </div>
                      </div>
                      <div>
-                         <label class="block text-sm font-medium text-gray-500 mb-3">Specie</label>
+                         <label class="block text-sm font-medium text-gray-500 mb-3">Species</label>
                          <div class="flex flex-wrap gap-2" id="species-filters">
                              <button type="button" data-filter="species" data-value=""
                                  class="filter-option selected">All</button>
@@ -49,6 +49,10 @@
                                  class="filter-option">Human</button>
                              <button type="button" data-filter="species" data-value="Alien"
                                  class="filter-option">Alien</button>
+                             <button type="button" data-filter="species" data-value="Humanoid"
+                                 class="filter-option">Humanoid</button>
+                             <button type="button" data-filter="species" data-value="Robot"
+                                 class="filter-option">Robot</button>
                          </div>
                      </div>
                  </div>
@@ -64,10 +68,10 @@
          </div>
 
          <div class="flex-1 overflow-y-auto" id="character-list">
-             <div class="p-4 lg:p-5 space-y-4" id="loading-state">
-                 <?php for ($i = 0; $i < 5; $i++): ?>
-                 <div class="animate-pulse flex gap-4 p-4 bg-primary-100 rounded-lg">
-                     <div class="w-12 h-12 bg-primary-200 rounded-full"></div>
+             <div class="p-4 lg:p-5 space-y-2" id="loading-state">
+                 <?php for ($i = 0; $i < 8; $i++): ?>
+                 <div class="animate-pulse flex items-center gap-4 px-5 py-4 bg-primary-100 rounded-lg">
+                     <div class="w-8 h-8 bg-primary-200 rounded-[20px]"></div>
                      <div class="flex-1 space-y-2">
                          <div class="h-4 bg-primary-200 rounded w-3/4"></div>
                          <div class="h-3 bg-primary-200 rounded w-1/2"></div>
@@ -75,7 +79,7 @@
                  </div>
                  <?php endfor; ?>
              </div>
-             <div class="p-4 lg:p-5 space-y-4 hidden" id="characters-container">
+             <div class="p-4 lg:p-5 space-y-2 hidden" id="characters-container">
              </div>
 
              <div class="p-4 lg:p-5 hidden" id="empty-state">
