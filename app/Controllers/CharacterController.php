@@ -5,37 +5,37 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Controller;
-
+use App\Services\CharacterService;
+use App\Services\ApiException;
 
 class CharacterController extends Controller
 {
-    /**
-     * Display characters page (main view)
-     * 
-     * @return string
-     */
+    private CharacterService $characterService;
+
+    public function __construct()
+    {
+        $this->characterService = new CharacterService();
+    }
+
     public function index(): string
     {
-        // Get query parameters for filtering
         $filters = [
             'name' => $this->query('name', ''),
             'status' => $this->query('status', ''),
             'species' => $this->query('species', ''),
+            'gender' => $this->query('gender', ''),
             'page' => (int) $this->query('page', 1),
         ];
 
         return $this->view('characters/index', [
             'title' => 'Rick & Morty Characters',
             'filters' => $filters,
+            'statuses' => $this->characterService->getStatuses(),
+            'species' => $this->characterService->getSpecies(),
+            'genders' => $this->characterService->getGenders(),
         ]);
     }
 
-    /**
-     * Display single character detail page
-     * 
-     * @param string $id Character ID
-     * @return string
-     */
     public function show(string $id): string
     {
         return $this->view('characters/show', [
@@ -44,71 +44,73 @@ class CharacterController extends Controller
         ]);
     }
 
-    /**
-     * API: List characters (JSON)
-     * 
-     * @return string
-     */
     public function list(): string
     {
-        // Get query parameters
-        $filters = [
-            'name' => $this->query('name', ''),
-            'status' => $this->query('status', ''),
-            'species' => $this->query('species', ''),
-            'page' => (int) $this->query('page', 1),
-        ];
+        try {
+            $filters = [
+                'name' => $this->query('name', ''),
+                'status' => $this->query('status', ''),
+                'species' => $this->query('species', ''),
+                'gender' => $this->query('gender', ''),
+            ];
+            $page = (int) $this->query('page', 1);
 
-        return $this->json([
-            'success' => true,
-            'message' => 'API endpoint ready.',
-            'filters' => $filters,
-            'data' => [],
-        ]);
+            $result = $this->characterService->getAll($filters, $page);
+
+            return $this->json($result);
+        } catch (ApiException $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], $e->getStatusCode() ?: 500);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
     }
 
-    /**
-     * API: Get character detail (JSON)
-     * 
-     * @param string $id Character ID
-     * @return string
-     */
     public function detail(string $id): string
     {
-        return $this->json([
-            'success' => true,
-            'message' => 'API endpoint ready.',
-            'characterId' => (int) $id,
-            'data' => null,
-        ]);
+        try {
+            $result = $this->characterService->getById((int) $id);
+
+            if ($result === null) {
+                return $this->json([
+                    'success' => false,
+                    'error' => 'Character not found',
+                ], 404);
+            }
+
+            return $this->json($result);
+        } catch (ApiException $e) {
+            return $this->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+            ], $e->getStatusCode() ?: 500);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'success' => false,
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error',
+            ], 500);
+        }
     }
 
-    /**
-     * API: Soft delete character (JSON)
-     * 
-     * @param string $id Character ID
-     * @return string
-     */
     public function delete(string $id): string
     {
         return $this->json([
             'success' => true,
-            'message' => 'Soft delete',
+            'message' => 'Soft delete - to be implemented in Phase 8',
             'characterId' => (int) $id,
         ]);
     }
 
-    /**
-     * API: Restore soft deleted character (JSON)
-     * 
-     * @param string $id Character ID
-     * @return string
-     */
     public function restore(string $id): string
     {
         return $this->json([
             'success' => true,
-            'message' => 'Restore endpoint',
+            'message' => 'Restore - to be implemented in Phase 8',
             'characterId' => (int) $id,
         ]);
     }

@@ -16,3 +16,5 @@ Thumbs.db
 /public/assets/css/*.map 
 docker-compose.override.yml
 package-lock.json
+storage/cache/*
+storage/logs/*
