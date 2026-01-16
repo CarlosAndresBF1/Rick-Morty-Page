@@ -1,0 +1,15 @@
+/* 
+ * Rick & Morty Character Explorer
+ * Main Stylesheet
+ * 
+ * Este archivo será procesado por TailwindCSS
+ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+ * Custom styles will be added in FASE 3
+ * when we configure Tailwind with Design Tokens
+ */

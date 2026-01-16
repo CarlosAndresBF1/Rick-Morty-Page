@@ -1,0 +1,19 @@
+{
+  "name": "rick-morty-explorer",
+  "version": "1.0.0",
+  "description": "Rick & Morty Character Explorer - PHP MVC Application",
+  "private": true,
+  "scripts": {
+    "dev": "npx tailwindcss -i ./src/css/app.css -o ./public/assets/css/app.css",
+    "watch": "npx tailwindcss -i ./src/css/app.css -o ./public/assets/css/app.css --watch",
+    "build": "npx tailwindcss -i ./src/css/app.css -o ./public/assets/css/app.css --minify"
+  },
+  "devDependencies": {
+    "tailwindcss": "^3.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Carlos Andres",
+  "license": "MIT"
+}
