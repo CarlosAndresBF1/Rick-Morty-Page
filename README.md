@@ -654,4 +654,81 @@ DeletedCharacter::restore(int $characterId): bool
 // Alternar estado de favorito
 StarredCharacter::toggle(int $characterId): array
 ```
+
+---
+
+## Estructura Modular del Codigo
+
+### Componentes PHP (Views)
+
+La vista principal se ha refactorizado en componentes PHP reutilizables y mantenibles:
+
+```
+app/Views/characters/
+├── index.php              # Vista principal (23 lineas - solo includes)
+├── _header.php            # Header del sidebar
+├── _search-filter.php     # Barra de busqueda y boton filtros
+├── _filter-dropdown.php   # Dropdown de filtros
+├── _character-list.php    # Listado con loading/empty states
+├── _detail-panel.php      # Panel de detalle desktop
+├── _mobile-detail.php     # Panel de detalle mobile
+└── _styles.php            # Estilos especificos de la vista
+```
+
+Cada componente tiene una responsabilidad unica, facilitando el mantenimiento y la identificacion de secciones.
+
+### Modulos JavaScript (ES6)
+
+El codigo JavaScript se ha dividido en modulos especializados:
+
+```
+public/assets/js/
+├── main.js          # Controlador principal y orquestador (230 lineas)
+├── api.js           # Cliente HTTP y endpoints API (50 lineas)
+├── state.js         # Gestion del estado de la aplicacion (80 lineas)
+├── ui.js            # Utilidades y helpers UI/DOM (120 lineas)
+└── characters.js    # Templates y renderizado de personajes (150 lineas)
+```
+
+#### api.js
+- Centraliza todos los endpoints de la API
+- Exporta `API` (objeto con URLs) y `ApiClient` (metodos HTTP)
+
+#### state.js
+- Gestiona el estado global: filtros, personajes, favoritos, paginacion
+- Metodos: `isStarred()`, `applyCharacterFilter()`, `getQueryParams()`
+
+#### ui.js
+- Utilidades para manipulacion del DOM
+- Metodos: `debounce()`, `showLoading()`, `showEmptyState()`, `updateApplyButton()`
+
+#### characters.js
+- Generacion de templates HTML
+- Clases: `CharacterTemplates` (HTML) y `CharacterRenderer` (renderizado)
+
+#### main.js
+- Punto de entrada de la aplicacion
+- Clase `App` que coordina la inicializacion, eventos y logica de negocio
+- Carga el script como modulo ES6: `<script type="module" src="main.js">`
+
+### Ventajas de la Arquitectura Modular
+
+1. **Separacion de responsabilidades**: Cada modulo/componente tiene un proposito especifico
+2. **Mantenibilidad**: Facil localizar y modificar funcionalidad
+3. **Escalabilidad**: Simple agregar nuevos modulos sin saturar archivos existentes
+4. **Reutilizacion**: Componentes y modulos pueden importarse donde se necesiten
+5. **Testing**: Mas sencillo probar funcionalidades aisladas
+6. **Legibilidad**: Codigo mas limpio y organizado
+
+### Flujo de Inicializacion
+
+1. `main.js` se carga como punto de entrada
+2. Importa todos los modulos necesarios
+3. Crea instancia de la clase `App`
+4. `App.init()` ejecuta:
+   - `loadStarredFromServer()` - Carga favoritos desde la base de datos
+   - `setupEventListeners()` - Bindea eventos de UI
+   - `setupInfiniteScroll()` - Configura scroll infinito
+   - `loadCharacters()` - Carga personajes iniciales desde la API
+
  

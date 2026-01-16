@@ -20,7 +20,7 @@
         <?= $content ?? '' ?>
     </main>
 
-    <script src="<?= asset('js/app.js') ?>" defer></script>
+    <script type="module" src="<?= asset('js/main.js') ?>"></script>
 </body>
 
 </html>
