@@ -10,20 +10,22 @@ export class CharacterTemplates {
     static getHeartButton(characterId, isStarred) {
         if (isStarred) {
             return `
-                <button class="heart-btn flex-shrink-0 p-1 transition-transform hover:scale-110" 
+                <button class="heart-btn flex-shrink-0 w-8 h-8 bg-white flex items-center justify-center transition-transform hover:scale-110 shadow-sm" 
+                        style="border-radius: 50%;"
                         data-heart-id="${characterId}"
                         aria-label="Remove from favorites">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#53C62A" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="#53C62A" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#53C62A"/>
                     </svg>
                 </button>
             `;
         } else {
             return `
-                <button class="heart-btn flex-shrink-0 p-1 transition-transform hover:scale-110" 
+                <button class="heart-btn flex-shrink-0 w-8 h-8 bg-white flex items-center justify-center transition-transform hover:scale-110 shadow-sm" 
+                        style="border-radius: 50%;"
                         data-heart-id="${characterId}"
                         aria-label="Add to favorites">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="#53C62A" stroke-width="2" fill="none"/>
                     </svg>
                 </button>
@@ -57,21 +59,23 @@ export class CharacterTemplates {
      */
     static createDetailHTML(character, isStarred) {
         const heartIcon = isStarred 
-            ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="#53C62A" xmlns="http://www.w3.org/2000/svg">
+            ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="#53C62A" xmlns="http://www.w3.org/2000/svg">
                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#53C62A"/>
                </svg>`
-            : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" stroke="#53C62A" stroke-width="2" fill="none"/>
                </svg>`;
         
         return `
             <div class="text-left">
                 <!-- Image with heart button overlay -->
-                <div class="relative inline-block mb-4">
+                <div class="relative mb-4" style="width: 75px; height: 75px;">
                     <img src="${character.image}" 
                          alt="${character.name}" 
-                         style="width: 75px; height: 75px; border-radius: 500px; object-fit: cover;">
-                    <button class="detail-heart-btn absolute -bottom-1 -right-1 p-1 transition-transform hover:scale-110 bg-white rounded-full shadow-sm" 
+                         class="w-full h-full object-cover"
+                         style="border-radius: 500px;">
+                    <button class="detail-heart-btn absolute w-8 h-8 flex items-center justify-center transition-transform hover:scale-110 bg-white shadow-sm" 
+                            style="bottom: -12px; right: 0; border-radius: 50%;"
                             data-detail-heart-id="${character.id}"
                             aria-label="${isStarred ? 'Remove from favorites' : 'Add to favorites'}">
                         ${heartIcon}
@@ -80,7 +84,7 @@ export class CharacterTemplates {
                 
                 <h2 class="text-2xl font-bold text-gray-900 mb-6">${character.name}</h2>
                 
-                <div class="space-y-4">
+                <div class="space-y-4 mb-6">
                     <div class="py-3 border-b border-gray-200">
                         <span class="block text-gray-900 font-semibold">Specie</span>
                         <span class="block text-gray-500 font-normal">${character.species}</span>
@@ -100,7 +104,7 @@ export class CharacterTemplates {
                 </div>
                 
                 <!-- Delete button -->
-                <div class="mt-6 pt-4 border-t border-gray-200">
+                <div>
                     <button class="delete-btn w-full py-2 px-4 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium text-sm flex items-center justify-center gap-2"
                             data-delete-id="${character.id}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
